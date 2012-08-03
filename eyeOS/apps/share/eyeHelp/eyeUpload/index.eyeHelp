@@ -1,14 +1,25 @@
-[b]Here you can upload files from your local computer or from web to oneye[/b]
-eyeUpload can be access by right clicking on your desktop or in your eyeFiles. You will also find it under your Actions menu in eyeFiles
+[b]Using eyeUpload, you can upload files from your local computer, from the web, or from another installation of oneye into your current system.*[/b]
+eyeUpload can be accessed by either right clicking on the oneye desktop or from inside oneye's File Manager application [i]eyeFiles[/i].
 
 
 [b]Simple Upload[/b]
-You can click on Browse and a list of your computers local files will pop-up and select the file you want.You can repeat this as many times as you would like, just click on the Another File to the right of Browse.
+Select [i]Browse[/i], and a list of your computer's local files will appear. Select the file you want then select [i]Upload[/i] to begin the process. To quickly upload multiple files, select [i]Another file[/i] to the right-hand side of [i]browse[/i] to be given another input field.
 
 
 [b]Advanced Upload[/b]
-With advanced upload unlike simple upload when you click Add Files a list of your computers local files will pop-up, and then you can hold down your Ctrl key and select as many files as you pleas then hit OK and upload all at once.
+If your computer has Adobe Flash Player installed, then the [i]Advanced[/i] option will be accessible to you. Selecting [i]Add Files[/i] will cause a list of your computer's local files to appear. Choose the file(s) you want uploading, holding down the [i]Control[/i] (Ctrl) button on your keyboard to select multiple files, then select [i]Upload now![/i] to upload all the selected files at once.
 
 
 [b]Web Upload[/b]
-If available, You will find a file that you would like to put on oneye why Download it to your PC first then upload it? With web upload find the url of the file and copy it into web upload and click Upload
+If enabled by your administator, this feature permits you to save a file from almost anywhere on the internet straight to your oneye user files.[list][*] First, find the url (the web address) pointing to the file, [*] Second, copy and paste it into the input field, [*] Third, select [i]Upload[/i].[/list]Oneye will do the rest, transferring the file directly from its source, without requiring you to download the file to your computer.
+
+
+[b]Cross-Site Transfer[/b]
+The latest addition to oneye's suite of upload tools, the cross-site option permits you to transfer files from one oneye installation to another. To use, you will need to know the url (web address) of, and possess a valid user account on, another oneye installation (referred to as the remote system).
+
+Enter the url of the remote system into the input field in the [i]Remote[/i] box, and select [i]Connect[/i]. If valid, the remote system will reply with a login screen. Enter the user credentials of your remote system into the screen, and select [i]Login[/i]. You should be now presented with a list of your files on the remote system. Select a file to have it instantly transferred.
+
+Don't forget to sign out of the remote system when you're done!
+
+
+* - Dependant on limitations put in place by the system adminstrator(s).

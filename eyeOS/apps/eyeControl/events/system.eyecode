@@ -59,6 +59,7 @@ function eyeControl_on_system_permissions($params = '') {
 	$xml['CONFIG'][0]['ALLOW_USER_REGISTER'][0] = $GLOBALS['eyeControl_system_permissions_checkbox_registration']->checked;
 	$xml['CONFIG'][0]['ALLOW_PUBLIC_DIRS'][0] = $GLOBALS['eyeControl_system_permissions_checkbox_publicdirs']->checked;
 	$xml['CONFIG'][0]['WEB_UPLOAD'][0] = $GLOBALS['eyeControl_system_permissions_checkbox_webupload']->checked;
+	$xml['CONFIG'][0]['ALLOW_CROSSSHARE'][0] = $GLOBALS['eyeControl_system_permissions_checkbox_crossShare']->checked;
 	eyeXML('setXMLFile',array($file,$xml));
 	eyex('messageBox',array('content' => 'Changes successfully saved.'));
 }

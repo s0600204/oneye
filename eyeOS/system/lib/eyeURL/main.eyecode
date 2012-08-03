@@ -53,6 +53,7 @@ class HTTP_Request extends HTTP_Request2 {
 		try {
 			$this->response = $this->send();
 		} catch (Exception $e) {
+			throw $e;
 			return false;
 		}
 		$status = $this->response->getStatus();
