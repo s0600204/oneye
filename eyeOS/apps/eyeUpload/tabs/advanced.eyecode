@@ -13,33 +13,45 @@ oneye is released under the GNU Affero General Public License Version 3 (AGPL3)
 Copyright © 2005 - 2010 eyeos Team (team@eyeos.org)
              since 2010 Lars Knickrehm (mail@lars-sh.de)
 */
-
-global $checknum;
-global $sessionId;
-$myFlash = new Flash(array(
-	'father' => $advancedTab,
-	'flashParamsNames' => array(
-		'checknum',
-		'flashFix',
-		'flashvars',
-		'scriptUrl',
-		'sid',
-		'signal'
-	),
-	'flashParamsValues' => array(
-		$checknum,
-		FLASH_UPLOAD_FIX,
-		'autostart=yes&checknum=' . $checknum . '&flashFix=' . FLASH_UPLOAD_FIX . '&jscontrol=true&loop=no&scriptUrl=index.php&sid=' . $sessionId . '&signal=advanced_Do',
-		'index.php',
-		$sessionId,
-		'advanced_Do'
-	),
-	'height' => 200,
-	'name' => 'eyeUpload_advanced_Flash',
-	'src' => 'index.php?extern=apps/eyeUpload/swf/eyeuploadx.swf&type=swf',
-	'width' => 450,
-	'x' => 8,
-	'y' => 8
-));
-$myFlash->show();
+	$myToolbar->addItem('sel_advanced','index.php?theme=' . $_SESSION['usertheme'] . '&extern=icons/22x22/upload.png','Advanced');
+	
+	$myContainer = new Container(array(
+		'father'=>$myWindow->name . '_Content',
+		'name' => 'eyeUpload_container_advanced',
+		'x' => 2,
+		'y' => 60,
+		'height' => $myWindow->height - 86,
+		'width' => $myWindow->width - 6
+	));
+	$myContainer->show();
+	$myContainer->hide();
+	
+	$myFlash = new Flash(array(
+		'father' => $myContainer->name,
+		'flashParamsNames' => array(
+			'checknum',
+			'flashFix',
+			'flashvars',
+			'scriptUrl',
+			'sid',
+			'signal'
+		),
+		'flashParamsValues' => array(
+			$checknum,
+			FLASH_UPLOAD_FIX,
+			'autostart=yes&checknum=' . $checknum . '&flashFix=' . FLASH_UPLOAD_FIX . '&jscontrol=true&loop=no&scriptUrl=index.php&sid=' . $sessionId . '&signal=advanced_Do',
+			'index.php',
+			$sessionId,
+			'advanced_Do'
+		),
+//		'height' => 200,
+		'height' => $myContainer->height,
+		'name' => 'eyeUpload_advanced_Flash',
+		'src' => 'index.php?extern=apps/eyeUpload/swf/eyeuploadx.swf&type=swf',
+//		'width' => 450,
+		'width' => $myContainer->width,
+		'x' => 0,
+		'y' => 0
+	));
+	$myFlash->show();
 ?>
