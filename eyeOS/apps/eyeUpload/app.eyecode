@@ -23,9 +23,11 @@ function eyeUpload_run($params = '') {
 		'savePosition' => 1,
 		'style' => TITLE + CLOSE + LISTED,
 		'title' => 'Upload files',
-		'width' => 470
+		'width' => 470,
+		'noZindex'=>true
 	));
 	$myWindow->show();
+	eyex('rawjs', array('js' => 'xZIndex("' . $GLOBALS['myPid'] . '_' . $myWindow->name . '", 999999);' ));
 
 	$myImage = new Imagebox(array(
 		'name' => 'eyeUpload_help',
@@ -57,14 +59,14 @@ function eyeUpload_run($params = '') {
 	$myTab = new Tab(array(
 		'father' => 'eyeUpload_Window_Content',
 		'name' => 'eyeUpload_Tab',
-		'height' => 240,
+		'height' => $myWindow->height - 30,
 		'tabwidth' => 90,
 		'useDisplay' => 0,
 		'width' => 466,
 		'x' => intval(!IE || IE > 6),
 		'y' => 5
 	));
-	$myTab->show();
+	$myTab->show(0);
 
 	$simpleTab = $myTab->addTab('Simple',1);
 	include_once(EYE_ROOT . '/' . APP_DIR . '/eyeUpload/tabs/simple.eyecode');
@@ -75,6 +77,8 @@ function eyeUpload_run($params = '') {
 	if (WEB_UPLOAD) {
 		$webTab = $myTab->addTab('Web',1);
 		include_once(EYE_ROOT . '/' . APP_DIR . '/eyeUpload/tabs/web.eyecode');
+		$crossShareTab = $myTab->addTab('Cross Site',1);
+		include_once(EYE_ROOT . '/' . APP_DIR . '/eyeUpload/tabs/crossShare.eyecode');
 	}
 	if (isset($advancedTab)) {
 		$myTab->selectByName('Advanced');
