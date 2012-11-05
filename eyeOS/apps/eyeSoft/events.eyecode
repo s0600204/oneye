@@ -23,30 +23,40 @@ function eyeSoft_on_Message($params="") {
 }
  
 function eyeSoft_on_Update($params=""){
-	// delete the old eyeSoft cache before downloading the new one
-	$dir = EYE_ROOT . '/' . SYSTEM_DIR . '/' . SYSTEM_CONF_DIR . '/ports/cache/';
-	if (vfs('real_fileExists', array($dir))) {
-		vfs('real_rmdir', array($dir));
+	// delete the old cache before creating a new one
+	$cache = EYE_ROOT . '/' . SYSTEM_DIR . '/' . SYSTEM_CONF_DIR . '/repos/cache/';
+	if (vfs('real_fileExists', array($cache))) {
+		vfs('real_rmdir', array($cache));
 	}
-	vfs('real_mkdir', array($dir));
+	vfs('real_mkdir', array($cache));
+	
 	// start with downloading script
-	$config = eyeXML('getXMLfile',array(EYE_ROOT.'/'.SYSTEM_DIR.'/'.SYSTEM_CONF_DIR.'/ports.xml'));
-	foreach($config['eyePorts'][0]['mirrors'][0]['mirror'] as $value) {
+	$config = eyeXML('getXMLfile',array(EYE_ROOT.'/'.SYSTEM_DIR.'/'.SYSTEM_CONF_DIR.'/repos.xml'));
+	foreach($config['repos'][0]['mirrors'][0]['mirror'] as $value) {
 		$httpClient = eyeURL('getHTTPClient');
 		$httpClient->setURL($value);
 		$httpClient->sendRequest();
 		$content = $httpClient->getResponseBody();
 		$myServer = eyeXML('xml2array',array($content));
 		if (is_array($myServer) === true) {
-			foreach($myServer['eyePorts'][0]['portServer'] as $pValue) {
+			if (is_array($myServer['eyePorts'])) {
+				// for old repos
+				$basexmlnode = 'eyePorts';
+				$subxmlnode = 'portServer';
+			} else {
+				$basexmlnode = 'repos';
+				$subxmlnode = 'repoServer';
+			}
+			foreach($myServer[$basexmlnode][0][$subxmlnode] as $pValue) {
 				$myPname = basename($pValue['name'][0]);
 				$httpClient->setURL('http://'.$pValue['address'][0].$pValue['path'][0]);
 				$httpClient->sendRequest();
 				$pContent = $httpClient->getResponseBody();
-				if(!file_exists(EYE_ROOT.'/'.SYSTEM_DIR.'/'.SYSTEM_CONF_DIR.'/ports/cache/'.$myPname.'.xml')) {
-					vfs('real_create',array(EYE_ROOT.'/'.SYSTEM_DIR.'/'.SYSTEM_CONF_DIR.'/ports/cache/'.$myPname.'.xml'));
+				$cachefile = EYE_ROOT.'/'.SYSTEM_DIR.'/'.SYSTEM_CONF_DIR.'/repos/cache/'.$myPname.'.xml';
+				if(!file_exists($cachefile)) {
+					vfs('real_create',array($cachefile));
 				}
-				$fp = vfs('real_open',array(EYE_ROOT.'/'.SYSTEM_DIR.'/'.SYSTEM_CONF_DIR.'/ports/cache/'.$myPname.'.xml','w'));
+				$fp = vfs('real_open',array($cachefile,'w'));
 				fwrite($fp,$pContent);
 				fclose($fp);
 			}
@@ -57,7 +67,7 @@ function eyeSoft_on_Update($params=""){
 }
  
 function getInstalled($app) {
-	$xml = eyeXML('getXMLfile',array(EYE_ROOT . '/' . SYSTEM_DIR . '/' . SYSTEM_CONF_DIR . '/ports/status.xml'));
+	$xml = eyeXML('getXMLfile',array(EYE_ROOT . '/' . SYSTEM_DIR . '/' . SYSTEM_CONF_DIR . '/repos/status.xml'));
 	if (is_array($xml) === true) {
 		foreach($xml['eyeSoft'][0]['package'] as $package) {
 			if ($package['name'][0] == $app['name'][0]) {
@@ -74,7 +84,7 @@ function getInstalled($app) {
 function eyeSoft_loadList($category=null,$search=null) {
 	global $myPid;
 	eyeX('rawjs',array('js'=>"document.getElementById('".$myPid."_eyeSoftHidden_Content').innerHTML='';"));
-	$content = vfs('real_getDirContent',array(EYE_ROOT.'/'.SYSTEM_DIR.'/'.SYSTEM_CONF_DIR.'/ports/cache/'));
+	$content = vfs('real_getDirContent',array(EYE_ROOT.'/'.SYSTEM_DIR.'/'.SYSTEM_CONF_DIR.'/repos/cache/'));
 	$myHeader = array('App Name','Version','Installed');
 	$sortypes = array("String","String","String");
  
@@ -114,7 +124,7 @@ function eyeSoft_loadList($category=null,$search=null) {
  
 function eyeSoft_on_ClickTable($params=null) {
 	$myApp = $GLOBALS['table_1']->selected;
-	$content = vfs('real_getDirContent',array(EYE_ROOT.'/'.SYSTEM_DIR.'/'.SYSTEM_CONF_DIR.'/ports/cache/'));
+	$content = vfs('real_getDirContent',array(EYE_ROOT.'/'.SYSTEM_DIR.'/'.SYSTEM_CONF_DIR.'/repos/cache/'));
 	if($content) {
 		if(is_array($content)) {
 			foreach($content as $current) {
@@ -243,7 +253,7 @@ function eyeSoft_on_stepInstall($params=null) {
 	$host = $info['address'][0];
 	$path = $info['path'][0].'/'.$info['filename'][0];
 	$url = "http://".$host.$path;
-	$fpath = EYE_ROOT.'/'.SYSTEM_DIR.'/'.SYSTEM_CONF_DIR.'/ports/swap/'.basename($info['filename'][0]);
+	$fpath = EYE_ROOT.'/'.SYSTEM_DIR.'/'.SYSTEM_CONF_DIR.'/repos/swap/'.basename($info['filename'][0]);
 	vfs('real_putFileContent', array($fpath, eyeURL('getRawFile', array('url' => $url))));
 	if(md5_file($fpath) != $info['key'][0]) {
 		$GLOBALS['Installing']->clear();
@@ -255,7 +265,7 @@ function eyeSoft_on_stepInstall($params=null) {
 	include(EYE_ROOT.'/'.APP_DIR.'/eyeSoft/libCompress'.EYE_CODE_EXTENSION);
 	lib_eyeCompress_extractFile(array(EYE_ROOT,$fpath));
 	unlink($fpath);
-	$xml = eyeXML('getXMLfile',array(EYE_ROOT . '/' . SYSTEM_DIR . '/' . SYSTEM_CONF_DIR . '/ports/status.xml'));
+	$xml = eyeXML('getXMLfile',array(EYE_ROOT . '/' . SYSTEM_DIR . '/' . SYSTEM_CONF_DIR . '/repos/status.xml'));
 	if (is_array($xml) === true) {
 		foreach ($xml['eyeSoft'][0]['package'] as $key => $value) {
 			if ($value['name'][0] == $info['name'][0]) {
@@ -266,7 +276,7 @@ function eyeSoft_on_stepInstall($params=null) {
 	$array['name'][0] = $info['name'][0];
 	$array['version'][0] = $info['version'][0];
 	$xml['eyeSoft'][0]['package'][] = $array;
-	eyeXML('setXMLfile',array(EYE_ROOT . '/' . SYSTEM_DIR . '/' . SYSTEM_CONF_DIR . '/ports/status.xml',$xml));
+	eyeXML('setXMLfile',array(EYE_ROOT . '/' . SYSTEM_DIR . '/' . SYSTEM_CONF_DIR . '/repos/status.xml',$xml));
 	$GLOBALS['Installing']->clear();
 	$myLabel1 = new Label(array('name'=>'Label1','father'=>'Installing_Content',
 		'text'=>"%s installed succesfully!",'tokens' => array($myApp),'y'=>15,'x'=>20));
@@ -279,7 +289,7 @@ function eyeSoft_on_Cancel($params=null) {
 }
  
 function getAppInformation($myApp) {
-	$content = vfs('real_getDirContent',array(EYE_ROOT.'/'.SYSTEM_DIR.'/'.SYSTEM_CONF_DIR.'/ports/cache/'));
+	$content = vfs('real_getDirContent',array(EYE_ROOT.'/'.SYSTEM_DIR.'/'.SYSTEM_CONF_DIR.'/repos/cache/'));
 	if($content) {
 		if(is_array($content)) {
 			foreach($content as $current) {
@@ -346,7 +356,7 @@ function eyeSoft_on_Uninstall_yes($params = '') {
 				if (vfs('real_fileExists',array($externDir))) {
 					vfs('real_rmdir',array($externDir));
 				}
-				$xml = eyeXML('getXMLfile',array(EYE_ROOT . '/' . SYSTEM_DIR . '/' . SYSTEM_CONF_DIR . '/ports/status.xml'));
+				$xml = eyeXML('getXMLfile',array(EYE_ROOT . '/' . SYSTEM_DIR . '/' . SYSTEM_CONF_DIR . '/repos/status.xml'));
 				$x = 0;
 				foreach($xml['eyeSoft'][0]['package'] as $package) {
 					if ($package['name'][0] == $app) {
@@ -354,7 +364,7 @@ function eyeSoft_on_Uninstall_yes($params = '') {
 					}
 					$x++;
 				}
-				eyeXML('setXMLfile',array(EYE_ROOT . '/' . SYSTEM_DIR . '/' . SYSTEM_CONF_DIR . '/ports/status.xml',$xml));
+				eyeXML('setXMLfile',array(EYE_ROOT . '/' . SYSTEM_DIR . '/' . SYSTEM_CONF_DIR . '/repos/status.xml',$xml));
 		} else {
 			eyex('messageBox',array('content' => 'The application cannot be uninstalled.'));
 			return;

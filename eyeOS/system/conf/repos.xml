@@ -1,4 +1,4 @@
-<eyePorts>
+<repos>
 	<mirrors>
 		<mirror>http://soft.oneye-project.org/</mirror>
 	</mirrors>
@@ -15,4 +15,4 @@
 		<category>Translations</category>
 		<category>Other Apps</category>
 	</categories>
-</eyePorts>
+</repos>

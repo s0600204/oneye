@@ -22,7 +22,7 @@ function eyeSoft_run($params=null) {
 		proc('end');
 		return;
 	}
-	$config = eyeXML('getXMLfile',array(EYE_ROOT.'/'.SYSTEM_DIR.'/'.SYSTEM_CONF_DIR.'/ports.xml'));
+	$config = eyeXML('getXMLfile',array(EYE_ROOT.'/'.SYSTEM_DIR.'/'.SYSTEM_CONF_DIR.'/repos.xml'));
 
 	$myWindow = new Window(array('name'=>'eyeSoft','father'=>'eyeApps',
 	'cent'=>1,'width'=>650,'height'=>570,'title'=>'Packages Manager','style' => TITLE + LISTED + MIN + CLOSE,'savePosition' => 1));
@@ -101,7 +101,7 @@ function eyeSoft_run($params=null) {
 	//read categories
 	$counter=1;
 
-	foreach($config['eyePorts'][0]['categories'][0]['category'] as $value) {;
+	foreach($config['repos'][0]['categories'][0]['category'] as $value) {;
 		$Yofset = $counter * 25+10;
 		$myLabel1 = new Label(array('name'=>'cat_lbl_'.$counter,
 			'father'=>'BOX_1','text'=>$value,'y'=>$Yofset,'x'=>15,'disablemsg'=>0,'signal'=>'catExecute'));
