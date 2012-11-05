@@ -23,46 +23,12 @@ function eyeSoft_on_Message($params="") {
 }
  
 function eyeSoft_on_Update($params=""){
-	// delete the old cache before creating a new one
-	$cache = EYE_ROOT . '/' . SYSTEM_DIR . '/' . SYSTEM_CONF_DIR . '/repos/cache/';
-	if (vfs('real_fileExists', array($cache))) {
-		vfs('real_rmdir', array($cache));
+	$ret = eyeSoft('updateCache');
+	if ($ret === true) {
+		eyeX('messageBox',array('content'=>'eyeSoft: Package list updated successfully.'));
+	} else {
+		eyeX('messageBox',array('content'=>'eyeSoft: Package list updated with errors.'));
 	}
-	vfs('real_mkdir', array($cache));
-	
-	// start with downloading script
-	$config = eyeXML('getXMLfile',array(EYE_ROOT.'/'.SYSTEM_DIR.'/'.SYSTEM_CONF_DIR.'/repos.xml'));
-	foreach($config['repos'][0]['mirrors'][0]['mirror'] as $value) {
-		$httpClient = eyeURL('getHTTPClient');
-		$httpClient->setURL($value);
-		$httpClient->sendRequest();
-		$content = $httpClient->getResponseBody();
-		$myServer = eyeXML('xml2array',array($content));
-		if (is_array($myServer) === true) {
-			if (is_array($myServer['eyePorts'])) {
-				// for old repos
-				$basexmlnode = 'eyePorts';
-				$subxmlnode = 'portServer';
-			} else {
-				$basexmlnode = 'repos';
-				$subxmlnode = 'repoServer';
-			}
-			foreach($myServer[$basexmlnode][0][$subxmlnode] as $pValue) {
-				$myPname = basename($pValue['name'][0]);
-				$httpClient->setURL('http://'.$pValue['address'][0].$pValue['path'][0]);
-				$httpClient->sendRequest();
-				$pContent = $httpClient->getResponseBody();
-				$cachefile = EYE_ROOT.'/'.SYSTEM_DIR.'/'.SYSTEM_CONF_DIR.'/repos/cache/'.$myPname.'.xml';
-				if(!file_exists($cachefile)) {
-					vfs('real_create',array($cachefile));
-				}
-				$fp = vfs('real_open',array($cachefile,'w'));
-				fwrite($fp,$pContent);
-				fclose($fp);
-			}
-		}
-	}
-	eyeX('messageBox',array('content'=>'eyeSoft: Package list updated'));
 	eyeSoft_loadList();
 }
  

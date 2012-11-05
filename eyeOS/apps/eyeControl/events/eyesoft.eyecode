@@ -40,7 +40,7 @@ function eyeControl_on_eyesoft_add($params = '') {
 		$mirrorXML = eyeXML('getXMLfile',array($dir));
 		$x = eyeControl_lib_findIdByText(array($mirrorXML['repos'][0]['mirrors'][0]['mirror'],$selected));
 		if (isset($x[0])) {
-			eyex('messageBox',array('content' => 'The mirror is installed, yet!'));
+			eyex('messageBox',array('content' => 'This mirror is already listed!'));
 		} else {
 			$mirrorXML['repos'][0]['mirrors'][0]['mirror'][] = $selected;
 			eyeXML('setXMLfile',array($dir,$mirrorXML));
@@ -53,28 +53,18 @@ function eyeControl_on_eyesoft_add($params = '') {
 }
 
 function eyeControl_on_eyesoft_add_test($params = '') {
-	$selected = $GLOBALS['eyeControl_eyesoft_add_textbox']->text;
-	if ($selected) {
-		$httpClient = eyeURL('getHTTPClient');
-		$httpClient->setURL($selected);
-		$httpClient->sendRequest();
-		$xml = $httpClient->getResponseBody();
-		$array = eyeXML('xml2array',array($xml));
-		if (is_array($array['eyePorts'])) {
-			// for old repos
-			$basexmlnode = 'eyePorts';
-			$subxmlnode = 'portServer';
+	$mirror = $GLOBALS['eyeControl_eyesoft_add_textbox']->text;
+	if ($mirror) {
+		$ret = eyeSoft('testMirror', array($mirror));
+		if (!$ret) {
+			eyex('messageBox',array('content' => 'Mirror cannot be accessed. Please check the address.'));
 		} else {
-			$basexmlnode = 'repos';
-			$subxmlnode = 'repoServer';
-		}
-		if ($array[$basexmlnode][0][$subxmlnode][0]['path'][0]) {
-			eyex('messageBox',array('content' => 'File can be downloaded successfully.'));
-		} else {
-			eyex('messageBox',array('content' => 'File cannot be downloaded. Please correct the address.'));
+			$s = substr($ret, 0, strpos($ret, ':'));
+			$f = substr($ret, strpos($ret, ':')+1);
+			eyex('messageBox',array('content' => 'This mirror will provide access to '.$s.' repositories ('.$f.' fails).'));
 		}
 	} else {
-		eyex('messageBox',array('content' => 'Please type an address!'));
+		eyex('messageBox',array('content' => 'Please enter an address.'));
 	}
 }
 
@@ -131,28 +121,18 @@ function eyeControl_on_eyesoft_edit_save($params = '') {
 }
 
 function eyeControl_on_eyesoft_edit_test($params = '') {
-	$selected = $GLOBALS['eyeControl_eyesoft_edit_textbox']->text;
-	if ($selected) {
-		$httpClient = eyeURL('getHTTPClient');
-		$httpClient->setURL($selected);
-		$httpClient->sendRequest();
-		$xml = $httpClient->getResponseBody();
-		$array = eyeXML('xml2array',array($xml));
-		if (is_array($array['eyePorts'])) {
-			// for old repos
-			$basexmlnode = 'eyePorts';
-			$subxmlnode = 'portServer';
+	$mirror = $GLOBALS['eyeControl_eyesoft_edit_textbox']->text;
+	if ($mirror) {
+		$ret = eyeSoft('testMirror', array($mirror));
+		if (!$ret) {
+			eyex('messageBox',array('content' => 'Mirror cannot be accessed. Please check the address.'));
 		} else {
-			$basexmlnode = 'repos';
-			$subxmlnode = 'repoServer';
-		}
-		if ($array[$basexmlnode][0][$subxmlnode][0]['path'][0]) {
-			eyex('messageBox',array('content' => 'File can be downloaded successfully.'));
-		} else {
-			eyex('messageBox',array('content' => 'File cannot be downloaded. Please correct the address.'));
+			$s = substr($ret, 0, strpos($ret, ':'));
+			$f = substr($ret, strpos($ret, ':')+1);
+			eyex('messageBox',array('content' => 'This mirror will provide access to '.$s.' repositories ('.$f.' fails).'));
 		}
 	} else {
-		eyex('messageBox',array('content' => 'Please type an address!'));
+		eyex('messageBox',array('content' => 'Please enter an address.'));
 	}
 }
 
@@ -199,23 +179,13 @@ function eyeControl_on_eyesoft_delete_yes($params = '') {
 function eyeControl_on_eyesoft_test($params = '') {
 	$mirror = $GLOBALS['eyeControl_eyesoft_sortabletable']->selected;
 	if ($mirror) {
-		$httpClient = eyeURL('getHTTPClient');
-		$httpClient->setURL($mirror);
-		$httpClient->sendRequest();
-		$xml = $httpClient->getResponseBody();
-		$array = eyeXML('xml2array',array($xml));
-		if (is_array($array['eyePorts'])) {
-			// for old repos
-			$basexmlnode = 'eyePorts';
-			$subxmlnode = 'portServer';
+		$ret = eyeSoft('testMirror', array($mirror));
+		if (!$ret) {
+			eyex('messageBox',array('content' => 'Mirror cannot be accessed. Please check the address.'));
 		} else {
-			$basexmlnode = 'repos';
-			$subxmlnode = 'repoServer';
-		}
-		if (is_array($array) === true && $array[$basexmlnode][0][$subxmlnode][0]['path'][0]) {
-			eyex('messageBox',array('content' => 'File can be downloaded successfully.'));
-		} else {
-			eyex('messageBox',array('content' => 'File cannot be downloaded. Please correct the address.'));
+			$s = substr($ret, 0, strpos($ret, ':'));
+			$f = substr($ret, strpos($ret, ':')+1);
+			eyex('messageBox',array('content' => 'This mirror provides access to '.$s.' repositories ('.$f.' fails).'));
 		}
 	} else {
 		eyex('messageBox',array('content' => 'Please choose a mirror to be tested.'));

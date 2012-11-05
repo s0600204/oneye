@@ -1,0 +1,127 @@
+<?php
+/*
+  ___  _ __   ___ _   _  ___
+ / _ \| '_ \ / _ \ | | |/ _ \
+| (_) | | | |  __/ |_| |  __/
+ \___/|_| |_|\___|\__, |\___|
+                  |___/
+
+oneye is released under the GNU Affero General Public License Version 3 (AGPL3)
+ -> provided with this release in license.txt
+ -> or via web at www.gnu.org/licenses/agpl-3.0.txt
+
+Copyright © 2005 - 2010 eyeos Team (team@eyeos.org)
+             since 2010 Lars Knickrehm (mail@lars-sh.de)
+*/
+
+function lib_eyeSoft_init () {
+	
+}
+
+function lib_eyeSoft_testMirror ($params = '') {
+	if (is_array($params) == false && count($params < 1)) {
+		errorCodes('setErrorCode', array(INCORRECT_PARAMS));
+		return false;
+	}
+	
+	$http = eyeURL('getHTTPClient');
+	$http->setURL($params[0]);
+	$http->sendRequest();
+	if ($http->getResponseCode() != 200) {
+		return false;
+	}
+	$xml = $http->getResponseBody();
+	$myMirror= eyeXML('xml2array',array($xml));
+	if (is_array($myMirror) === true) {
+		if (is_array($myMirror['eyePorts'])) {
+			// for old repos
+			$basexmlnode = 'eyePorts';
+			$subxmlnode = 'portServer';
+		} else {
+			$basexmlnode = 'repos';
+			$subxmlnode = 'repoServer';
+		}
+		$successes = 0;
+		$fails = 0;
+		foreach($myMirror[$basexmlnode][0][$subxmlnode] as $rValue) {
+			$rName = basename($rValue['name'][0]);
+			$http->setURL('http://'.$rValue['address'][0].$rValue['path'][0]);
+			$http->sendRequest();
+			if ($http->getResponseCode() != 200) {
+				$fails++;
+			} else {
+				$rContent = $http->getResponseBody();
+				if (!is_array($rContent['packages'])) {
+					$fails++;
+				} else {
+					$successes++;
+				}
+			}
+		}
+		return $successes . ':' . $fails;
+	} else {
+		return false;
+	}
+}
+
+function lib_eyeSoft_updateCache () {
+	// delete the old cache before creating a new one
+	$cache = EYE_ROOT . '/' . SYSTEM_DIR . '/' . SYSTEM_CONF_DIR . '/repos/cache/';
+	if (vfs('real_fileExists', array($cache))) {
+		vfs('real_rmdir', array($cache));
+	}
+	vfs('real_mkdir', array($cache));
+	
+	// start with downloading script
+	$errors = 0;
+	$config = eyeXML('getXMLfile',array(EYE_ROOT.'/'.SYSTEM_DIR.'/'.SYSTEM_CONF_DIR.'/repos.xml'));
+	foreach($config['repos'][0]['mirrors'][0]['mirror'] as $addr) {
+		$http = eyeURL('getHTTPClient');
+		$http->setURL($addr);
+		$http->sendRequest();
+		if ($http->getResponseCode() != 200) {
+			$errors++;
+		} else {
+			$content = $http->getResponseBody();
+			$myMirror = eyeXML('xml2array',array($content));
+			if (is_array($myMirror) === true) {
+				if (is_array($myMirror['eyePorts'])) {
+					// for old repos
+					$basexmlnode = 'eyePorts';
+					$subxmlnode = 'portServer';
+				} else {
+					$basexmlnode = 'repos';
+					$subxmlnode = 'repoServer';
+				}
+				foreach($myMirror[$basexmlnode][0][$subxmlnode] as $rValue) {
+					$rName = basename($rValue['name'][0]);
+					$http->setURL('http://'.$rValue['address'][0].$rValue['path'][0]);
+					$http->sendRequest();
+					if ($http->getResponseCode() != 200) {
+						$errors++;
+					} else {
+						$rContent = $http->getResponseBody();
+						if (!is_array($rContent['packages'])) {
+							$errors++;
+						} else {
+							$cachefile = EYE_ROOT.'/'.SYSTEM_DIR.'/'.SYSTEM_CONF_DIR.'/repos/cache/'.$rName.'.xml';
+							if(!file_exists($cachefile)) {
+								vfs('real_create',array($cachefile));
+							}
+							$fp = vfs('real_open',array($cachefile,'w'));
+							fwrite($fp, $rContent);
+							fclose($fp);
+						}
+					}
+				}
+			}
+		}
+	}
+	if ($errors > 0) {
+		return $errors;
+	} else {
+		return true;
+	}
+}
+
+?>
