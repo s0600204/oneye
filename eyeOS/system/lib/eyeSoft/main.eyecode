@@ -51,6 +51,7 @@ function lib_eyeSoft_testMirror ($params = '') {
 				$fails++;
 			} else {
 				$rContent = $http->getResponseBody();
+				$rContent = eyeXML('xml2array',array($rContent));
 				if (!is_array($rContent['packages'])) {
 					$fails++;
 				} else {
@@ -101,7 +102,8 @@ function lib_eyeSoft_updateCache () {
 						$errors++;
 					} else {
 						$rContent = $http->getResponseBody();
-						if (!is_array($rContent['packages'])) {
+						$rContentArr = eyeXML('xml2array',array($rContent));
+						if (!is_array($rContentArr['packages'])) {
 							$errors++;
 						} else {
 							$cachefile = EYE_ROOT.'/'.SYSTEM_DIR.'/'.SYSTEM_CONF_DIR.'/repos/cache/'.$rName.'.xml';
@@ -121,6 +123,85 @@ function lib_eyeSoft_updateCache () {
 		return $errors;
 	} else {
 		return true;
+	}
+}
+
+function lib_eyeSoft_generatePackageList ($params = '') {
+	if (is_array($params)) {
+		$category = $params[0];
+	} else {
+		$category = null;
+	}	
+	$cache = vfs('real_getDirContent',array(EYE_ROOT.'/'.SYSTEM_DIR.'/'.SYSTEM_CONF_DIR.'/repos/cache/'));
+	$list = Array();
+	if($cache && is_array($cache)) {
+		foreach($cache as $repo) {
+			$xml = eyeXML('getXMLfile',array($repo));
+			//$myArray = eyeXML('xml2array',array($xml));
+			foreach($xml['packages'][0]['package'] as $package) {
+				
+				// Category check
+				if ($category !== null && $category !== $package['category'][0]) {
+					continue;	// skip to the next iteration
+				}
+				
+				// Version check
+				if (isset($package['minVersion'])) {
+					if(eyeSoft('compareVersions', array($package['minVersion'][0], ONEYE_VERSION)) == true) {
+						continue;	// skip to the next iteration
+					}
+				}
+				if (isset($package['maxVersion'])) {
+					if(eyeSoft('compareVersions', array(ONEYE_VERSION, $package['maxVersion'][0])) == true) {
+						continue;	// skip to the next iteration
+					}
+				}
+				
+				// Check it if doesn't already exist in the list
+				$found = false;
+				for ($p = 0; $p < count($list); $p++) {
+					if ($list[$p]['key'][0] == $package['key'][0]) {
+						// Check versions
+						if (eyeSoft('compareVersions', array($list[$p]['version'][0], $package['version'][0]))) {
+							// if better version, overwrite it
+							$list[$p] = $package;
+						}
+						$found = true;
+						break;
+					}
+				}
+				
+				// Otherwise, add it to the list
+				if (!$found) {
+					$list[] = $package;
+				}
+			}
+		}
+		return $list;
+	} else {
+		return false;
+	}
+}
+
+function lib_eyeSoft_compareVersions ($params) {
+	if (is_array($params) == false && count($params < 2)) {
+		errorCodes('setErrorCode', array(INCORRECT_PARAMS));
+		return false;
+	}
+	
+	$dot_1 = strpos($params[0], '.');
+	$dot_2 = strpos($params[1], '.');
+	$num_1 = ($dot_1 !== false) ? substr($params[0], 0, $dot_1) : $params[0];
+	$num_2 = ($dot_2 !== false) ? substr($params[1], 0, $dot_2) : $params[1];
+	
+	if (intval($num_1) < intval($num_2)) {
+		return true;
+	} elseif  ($dot_1 === false || $dot_2 === false) {
+		return false;
+	} else {
+		$params[0] = substr($params[0], $dot_1+1);
+		$params[1] = substr($params[1], $dot_1+1);
+		return eyeSoft('compareVersions', array($params[0], $params[1]));
 	}
 }
 
