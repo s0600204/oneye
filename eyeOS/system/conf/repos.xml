@@ -3,16 +3,20 @@
 		<mirror>http://soft.oneye-project.org/</mirror>
 	</mirrors>
 	<categories>
-		<category>All</category>
-		<category>Desktop</category>
-		<category>Administration</category>
-		<category>Internet</category>
-		<category>Multimedia</category>
-		<category>Office</category>
+		<category>All Applications</category>
+		<category>Audio</category>
+		<category>Video</category>
+		<category>Development</category>
 		<category>Education</category>
-		<category>Games</category>
-		<category>Themes</category>
-		<category>Translations</category>
-		<category>Other Apps</category>
+		<category>Game</category>
+		<category>Graphics</category>
+		<category>Network</category>
+		<category>Office</category>
+		<category>Science</category>
+		<category>Settings</category>
+		<category>System</category>
+		<category>Translation</category>
+		<category>Utility</category>
+		<category>Widget</category>
 	</categories>
 </repos>
