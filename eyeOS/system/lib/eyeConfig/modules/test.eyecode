@@ -1,0 +1,19 @@
+<?php
+
+function lib_eyeConfig_setUserConfig($params) {
+	return lib_eyeConfig_XMLsetUserConfig($params);
+}
+
+function lib_eyeConfig_getUserConfig($params) {
+	return lib_eyeConfig_XMLgetUserConfig($params);
+}
+
+function lib_eyeConfig_addUserConfig($params) {
+	return lib_eyeConfig_XMLaddUserConfig($params);
+}
+
+function lib_eyeConfig_remUserConfig($params) {
+	return lib_eyeConfig_XMLremUserConfig($params);
+}
+
+?>

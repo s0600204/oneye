@@ -1,0 +1,27 @@
+<eyeConfig_module>
+	<description>Test/Example method, used for testing/demonstating parts of this System</description>
+	<constant>
+		<name>TEST_COLOUR</name>
+		<value>Blue</value>
+		<default>Blue</default>
+		<ui_name>Colour</ui_name>
+	</constant>
+	<constant>
+		<name>TEST_PATTERN</name>
+		<value>Spotty</value>
+		<default>Striped</default>
+		<ui_name>Pattern</ui_name>
+	</constant>
+	<constant>
+		<name>TEST_LENGTH</name>
+		<value>200</value>
+		<default>100</default>
+		<ui_name>Length (m)</ui_name>
+	</constant>
+	<constant>
+		<name>TEST_MATERIAL</name>
+		<value>Wool</value>
+		<default>Cotton</default>
+		<ui_name>Material</ui_name>
+	</constant>
+</eyeConfig_module>
