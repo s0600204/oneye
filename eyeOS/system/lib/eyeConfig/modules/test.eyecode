@@ -1,19 +1,71 @@
 <?php
 
 function lib_eyeConfig_setUserConfig($params) {
-	return lib_eyeConfig_XMLsetUserConfig($params);
+	if (!is_array($params) || !isset($params[0]) || !isset($params[1])) {
+		errorCodes('setErrorCode', array(INCORRECT_PARAMS));
+		return false;
+	}
+	
+	$username = $params[0];
+	if (!$username) {
+		return false;
+	}
+	$configfile = EYE_ROOT . '/' . 'acc_alt' . '/' . getAcronim(array($username)) . '/' . $username . '.xml';
+	return eyeXML('setXMLfile', array($configfile, $params[1]));
 }
 
 function lib_eyeConfig_getUserConfig($params) {
-	return lib_eyeConfig_XMLgetUserConfig($params);
+	if (!is_array($params) || !isset($params[0])) {
+		errorCodes('setErrorCode', array(INCORRECT_PARAMS));
+		return false;
+	}
+	
+	$username = $params[0];
+	if (!$username) {
+		return false;
+	}
+	$configfile = EYE_ROOT . '/' . 'acc_alt' . '/' . getAcronim(array($username)) . '/' . $username . '.xml';
+	return eyeXML('getXMLfile', array($configfile));
 }
 
 function lib_eyeConfig_addUserConfig($params) {
-	return lib_eyeConfig_XMLaddUserConfig($params);
+	if (!is_array($params) || !isset($params[0]) || !isset($params[1])) {
+		errorCodes('setErrorCode', array(INCORRECT_PARAMS));
+		return false;
+	}
+	
+	$username = $params[0];
+	if (!$username) {
+		return false;
+	}
+	$filepath = EYE_ROOT . '/' . 'acc_alt' . '/' . getAcronim(array($username));
+	if (!vfs('real_exists',array($filepath))) {
+		vfs('mkDir',array($filepath));
+	}
+	return eyeConfig('setUserConfig', array($params[0], $params[1]));
 }
 
 function lib_eyeConfig_remUserConfig($params) {
-	return lib_eyeConfig_XMLremUserConfig($params);
+	if (!is_array($params) || !isset($params[0])) {
+		errorCodes('setErrorCode', array(INCORRECT_PARAMS));
+		return false;
+	}
+	
+	$username = $params[0];
+	if (!$username) {
+		return false;
+	}
+	$configfile = EYE_ROOT . '/' . 'acc_alt' . '/' . getAcronim(array($username)) . '/' . $username . '.xml';
+	return vfs('real_delete', array($configfile));
+}
+
+function lib_eyeConfig_initMethod($params) {
+	
+	$config_dir = EYE_ROOT .'/acc_alt';
+	if (!is_dir($config_dir)) {
+		vfs('real_mkdir', array($config_dir));
+	}
+	return true;
 }
 
 ?>

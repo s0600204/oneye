@@ -14,7 +14,7 @@
 	</constant>
 	<constant>
 		<name>TEST_LENGTH</name>
-		<value>200</value>
+		<value>300</value>
 		<default>100</default>
 		<ui_name>Length (m)</ui_name>
 	</constant>
