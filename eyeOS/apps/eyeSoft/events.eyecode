@@ -47,49 +47,32 @@ function getInstalled($app) {
 	}
 }
  
-function eyeSoft_loadList($category=null,$search=null) {
+function eyeSoft_loadList($category=null, $search=null) {
 	global $myPid;
-	eyeX('rawjs',array('js'=>"document.getElementById('".$myPid."_eyeSoftHidden_Content').innerHTML='';"));
-	$content = vfs('real_getDirContent',array(EYE_ROOT.'/'.SYSTEM_DIR.'/'.SYSTEM_CONF_DIR.'/repos/cache/'));
-	$myHeader = array('App Name','Version','Installed');
-	$sortypes = array("String","String","String");
- 
-	$myTable = new Sortabletable(array('name'=>'table_1','father'=>'eyeSoftHidden_Content',
-		'sortypes'=>$sortypes,'theader'=>$myHeader,'x'=>5,'y'=>0,'width'=>415,'height'=>330,'signal'=>'ClickTable'));
-	$myTable->show();
-	if($content) {
-		if(is_array($content)) {
-			foreach($content as $current) {
-				$fp = vfs('real_open',array($current,'r'));
-				$xml = fread($fp,filesize($current));
-				fclose($fp);
-				$myArray = eyeXML('xml2array',array($xml));
-				foreach($myArray['packages'][0]['package'] as $value) {
-					if(!$category) {
-						if(!$search) {
-							$myTable->addRow(array($value['name'][0],$value['version'][0],getInstalled($value)));
-						} else {
-							if (utf8_stripos($value['name'][0], $search) !== false || utf8_stripos($value['description'][0], $search) !== false) {
-								$myTable->addRow(array($value['name'][0],$value['version'][0],getInstalled($value)));
-							}
-						}
-					} else {
-						if($category == $value['category'][0]) {
-							if(!$search) {
-								$myTable->addRow(array($value['name'][0],$value['version'][0],getInstalled($value)));
-							} elseif(utf8_stripos($value['name'][0], $search) !== false || utf8_stripos($value['description'][0], $search) !== false) {
-								$myTable->addRow(array($value['name'][0],$value['version'][0],getInstalled($value)));
-							}
-						}
-					}
-				}
+
+	$myTable = $GLOBALS['eyeSoft_table'];
+	$myTable->delAllRows();
+	
+	if ($search == null) {
+		$search = $GLOBALS['eyeSoft_search']->text;
+	}
+	
+	$packageList = eyeSoft('generatePackageList', array($category));
+	if ($packageList) {
+		foreach($packageList as $package) {
+			if (!$search) {
+				$myTable->addRow(array($package['name'][0],$package['version'][0],getInstalled($package)));
+			} elseif (utf8_stripos($package['name'][0], $search) !== false || utf8_stripos($package['description'][0], $search) !== false) {
+				$myTable->addRow(array($package['name'][0],$package['version'][0],getInstalled($package)));
 			}
 		}
 	}
+	
+	$GLOBALS['eyeSoft_description']->setText('');
 }
  
 function eyeSoft_on_ClickTable($params=null) {
-	$myApp = $GLOBALS['table_1']->selected;
+	$myApp = $GLOBALS['eyeSoft_table']->selected;
 	$content = vfs('real_getDirContent',array(EYE_ROOT.'/'.SYSTEM_DIR.'/'.SYSTEM_CONF_DIR.'/repos/cache/'));
 	if($content) {
 		if(is_array($content)) {
@@ -107,7 +90,7 @@ function eyeSoft_on_ClickTable($params=null) {
 						$text .= i18n('translate',array('Version: %s',array($value['version'][0]))) . "\n";
 						$text .= i18n('translate',array('Category: %s',array($value['category'][0]))) . "\n";
 						$text .= i18n('translate',array('Author: %s',array($value['author'][0]))) . "\n";
-						$GLOBALS['description']->setText($text);
+						$GLOBALS['eyeSoft_description']->setText($text);
 						return;
 					}
 				}
@@ -117,28 +100,28 @@ function eyeSoft_on_ClickTable($params=null) {
 }
  
 function eyeSoft_on_catExecute($params=null) {
+	$config = eyeXML('getXMLfile',array(EYE_ROOT.'/'.SYSTEM_DIR.'/'.SYSTEM_CONF_DIR.'/repos.xml'));
+	
 	foreach($params as $key=>$value) {
-		if ( /* utf8 */ strpos($key, 'cat_lbl_') !== false) {
-			$category = $value[0];
-			if($category == i18n('translate',array('All'))) {
-				eyeSoft_loadList();
-			} else {
-				global $language;
-				foreach ($language as $key => $value) {
-					if ($value == $category) {
-						$category = $key;
-						break;
-					}
+		$category = $config['repos'][0]['categories'][0]['category'][$value[0]];
+		if($value == 0) {
+			eyeSoft_loadList();
+		} else {
+			global $language;
+			foreach ($language as $key => $value) {
+				if ($value == $category) {
+					$category = $key;
+					break;
 				}
-				eyeSoft_loadList($category);
 			}
-			return;
+			eyeSoft_loadList($category);
 		}
+		return;
 	}
 }
  
 function eyeSoft_on_Install($params=null){
-	$myApp = $GLOBALS['table_1']->selected;
+	$myApp = $GLOBALS['eyeSoft_table']->selected;
 	if ($myApp) {
 		global $myPid;
 		global $checknum;
@@ -199,7 +182,7 @@ function eyeSoft_on_Install($params=null){
 		$myHidden = new Hidden(array('name'=>'myApp','father'=>'eyeApps','text'=>$myApp));
 		eyeWidgets('serialize',array($myHidden));
 	} else {
-		eyex('messageBox',array('content' => 'Please choose an applictaion to be installed.'));
+		eyex('messageBox',array('content' => 'Please choose an application to be installed.'));
 	}
 }
  
@@ -276,7 +259,7 @@ function getAppInformation($myApp) {
 }
  
 function eyeSoft_on_search() {
-	eyeSoft_loadList(null,$GLOBALS['search']->text);
+	eyeSoft_loadList(null, $GLOBALS['eyeSoft_search']->text);
 }
  
 function eyeSoft_on_Close(){

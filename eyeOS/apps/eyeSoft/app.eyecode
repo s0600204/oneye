@@ -18,95 +18,142 @@ function eyeSoft_run($params=null) {
 	global $currentUser;
 	global $myPid;
 	if($currentUser != ROOTUSER) {
-		eyex('messageBox',array('content'=>'Only root can install eyeApps'));
+		eyex('messageBox',array('content' => 'Only root can install eyeApps'));
 		proc('end');
 		return;
 	}
 	$config = eyeXML('getXMLfile',array(EYE_ROOT.'/'.SYSTEM_DIR.'/'.SYSTEM_CONF_DIR.'/repos.xml'));
 
-	$myWindow = new Window(array('name'=>'eyeSoft','father'=>'eyeApps',
-	'cent'=>1,'width'=>650,'height'=>570,'title'=>'Packages Manager','style' => TITLE + LISTED + MIN + CLOSE,'savePosition' => 1));
+	$myWindow = new Window(array(
+		'name' => 'eyeSoft',
+		'father' => 'eyeApps',
+		'cent' => 1,
+		'width' => 650,
+		'height' => 570,
+		'title' => 'Package Manager',
+		'style' => TITLE + LISTED + MIN + CLOSE,
+		'savePosition' => 1
+	));
 	$myWindow->show();
-
-	$myWindow = new Window(array('name'=>'eyeSoftHidden','father'=>'eyeSoft_Content',
-	'width'=>430,'height'=>360,'type'=>100,'x'=>207,'y'=>33));
-	$myWindow->show();
-
-	$myTextBox = new Textbox(array('name'=>'search','father'=>'eyeSoft_Content',
-		'x'=>90,'y'=>15,'width'=>180,'horiz'=>1));
+	
+	$myToolbar = new Toolbar(array(
+		'name' => 'eyeSoft_toolbar',
+		'father' => $myWindow->name . '_Content'
+	));
+	$myToolbar->show();
+	
+	$myBox = new Box(array(
+		'name' => 'eySoft_catBox',
+		'father' => $myWindow->name . '_Content',
+		'x' => 6,
+		'y' => 90,
+		'width' => 180,
+		'height' => 312,
+		'title' => 'Categories'
+	));
+	$myBox->show();
+	
+	$myImagebox = new Imagebox(array(
+		'name' => 'eyeSoft_imagebox_left',
+		'father' => $myWindow->name . '_Content',
+		'url' => 'index.php?theme=' . $_SESSION['usertheme'] . '&extern=images/windows/pathleft.png',
+		'x' => 6,
+		'y' => 64
+	));
+	$myImagebox->show();
+	
+	$myTextBox = new Textbox(array(
+		'name' => 'eyeSoft_search',
+		'father' => $myWindow->name . '_Content',
+		'x' => $myImagebox->x + 14,
+		'y' => 64,
+		'width' => $myBox->width - 14 - 22
+	));
 	$myTextBox->show();
 	$myTextBox->addEnterEventMsg('search');
-
-	$myButton = new Button(array('name'=>'doSearch','father'=>'eyeSoft_Content',
-		'caption'=>'Search','x'=>12,'y'=>$myTextBox->y-1,'signal'=>'search','horiz'=>1));
-	$myButton->addFriend($myTextBox);
-	$myButton->show();
-
-	$myBox = new Box(array('name'=>'BOX_1','father'=>'eyeSoft_Content','x'=>15,'y'=>56,'width'=>182,
-		'height'=>331,'title'=>'Categories'));
-	$myBox->show();
-
+	$myTextBox->setCss(array(
+		'border-radius' => '0px',
+		'background-image' => 'url(index.php?theme=' . $_SESSION['usertheme'] . '&extern=images/windows/pathcenter.png)',
+		'background-repeat' => 'repeat-x',
+		'border' => 'none',
+		'height' => '14px',
+		'padding-bottom' => '3px',
+		'padding-top' => '3px'
+	));
+	
+	$myImagebox = new Imagebox(array(
+		'name' => 'eyeSoft_imagebox_right',
+		'father' => $myWindow->name . '_Content',
+		'signal' => 'search',
+		'disableMsg' => 0,
+		'url' => 'index.php?theme=' . $_SESSION['usertheme'] . '&extern=images/windows/pathsearch.png',
+		'x' => $myTextBox->x + $myTextBox->width,
+		'y' => 64
+	));
+	$myImagebox->addFriend($myTextBox);
+	$myImagebox->show(0);
+	$myImagebox->setCss(array('cursor' => 'pointer'));
+	
+	$myListbox = new Listbox(array(
+		'name' => 'eyeSoft_listbox',
+		'father' => $myBox->name,
+		'x' => 2,
+		'y' => 25,
+		'width' => $myBox->width - 4,
+		'height' => $myBox->height - 27,
+		'signal' => 'catExecute',
+		'border' => 0
+	));
+	$myListbox->show();
+	
+	$myContainer = new Container(array(
+		'name' => 'eyeSoft_container',
+		'father' => $myWindow->name . '_Content',
+		'width' => $myWindow->width - $myBox->width - 24,
+		'height' => $myBox->height + 24,
+		'x' => $myBox->width + 14,
+		'y' => 64
+	));
+	$myContainer->show();
+	
 	$myHeader = array('App Name','Version','Installed');
 	$sortypes = array("String","String","String");
 
-	$myTable = new Sortabletable(array('name'=>'table_1','father'=>'eyeSoftHidden_Content',
-		'sortypes'=>$sortypes,'theader'=>$myHeader,'x'=>5,'y'=>0,'width'=>415,'height'=>330));
+	$myTable = new Sortabletable(array(
+		'name' => 'eyeSoft_table',
+		'father' => $myContainer->name,
+		'sortypes' => $sortypes,
+		'theader' => $myHeader,
+		'x' => 0,
+		'y' => 0,
+		'signal' => 'ClickTable',
+		'width' => $myContainer->width,
+		'height' => $myContainer->height
+	));
 	$myTable->show();
 
-	$myButton = new Button(array(
-		'name'=>'Install',
-		'father'=>'eyeSoft_Content',
-		'signal'=>'Install',
-		'caption'=>'Install',
-		'x'=>20,'y'=>15,
-		'img'=>'index.php?theme=' . $_SESSION['usertheme'] . '&extern=icons/16x16/plus.png'
+	$myToolbar->addItem('Install', 'index.php?theme=' . $_SESSION['usertheme'] . '&extern=icons/22x22/edit_add.png', 'Install');
+	$myToolbar->addItem('Update', 'index.php?theme=' . $_SESSION['usertheme'] . '&extern=icons/22x22/refresh.png', 'Update');
+	$myToolbar->addItem('Uninstall', 'index.php?theme=' . $_SESSION['usertheme'] . '&extern=icons/22x22/edit_remove.png', 'Uninstall');
+	$myToolbar->addItem('Help', 'index.php?theme=' . $_SESSION['usertheme'] . '&extern=icons/22x22/help.png', 'Help', '', 1);
+	
+	$myTextArea = new Textarea(array(
+		'name' => 'eyeSoft_description',
+		'father' => $myWindow->name . '_Content',
+		'width' => $myWindow->width - 16,
+		'height' => $myWindow->height - $myContainer->height - 104,
+		'x' => 6,
+		'y' => 8,
+		'vert' => 1,
+		'enabled' => 0
 	));
-	$myButton->addFriend($myTable);
-	$myButton->show();
-
-	$myButton = new Button(array(
-		'name'=>'Update',
-		'father'=>'eyeSoft_Content',
-		'signal'=>'Update',
-		'caption'=>'Update',
-		'x'=>110,'y'=>15,
-		'img'=>'index.php?theme=' . $_SESSION['usertheme'] . '&extern=icons/16x16/refresh.png'
-	));
-	$myButton->show();
-
-	$myButton = new Button(array(
-		'name'=>'Uninstall',
-		'father'=>'eyeSoft_Content',
-		'signal'=>'Uninstall',
-		'caption'=>'Uninstall',
-		'x'=>200,'y'=>15,
-		'img'=>'index.php?theme=' . $_SESSION['usertheme'] . '&extern=icons/16x16/minus.png'
-	));
-	$myButton->addFriend($myTable);
-	$myButton->show();
-
-	$myButton = new Button(array(
-		'name'=>'Help',
-		'father'=>'eyeSoft_Content',
-		'signal'=>'Help',
-		'caption'=>'Help',
-		'x'=>300,'y'=>15,
-		'img'=>'index.php?theme=' . $_SESSION['usertheme'] . '&extern=icons/16x16/eyeHelp.png'
-	));
-	$myButton->show();
-
-	$myTextArea = new Textarea(array('name'=>'description','father'=>'eyeSoft_Content',
-		'width'=>614,'height'=>145,'x'=>15,'y'=>392,'enabled'=>0));
 	$myTextArea->show();
+	
 	//read categories
-	$counter=1;
-
+	$counter=0;
 	foreach($config['repos'][0]['categories'][0]['category'] as $value) {;
-		$Yofset = $counter * 25+10;
-		$myLabel1 = new Label(array('name'=>'cat_lbl_'.$counter,
-			'father'=>'BOX_1','text'=>$value,'y'=>$Yofset,'x'=>15,'disablemsg'=>0,'signal'=>'catExecute'));
-		$myLabel1->show();
-		$myLabel1->setCss(array('cursor'=>'Pointer'));
+	//	$myListbox->addItem($value, $counter, 'index.php?theme='.$_SESSION['usertheme'].'&extern=icons/22x22/'.eyeApps_lib_GetCategoryIcon($value).'.png');
+		$myListbox->addItem($value, $counter);
 		$counter++;
 	}
 	include_once(EYE_ROOT.'/'.APP_DIR.'/eyeSoft/events'.EYE_CODE_EXTENSION);
