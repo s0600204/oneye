@@ -81,7 +81,6 @@ function eyeDocs_run($params=null) {
 }
 
 function eyeDocs_end($params=null) {
-	eyeConverter('cleanTmp');
 	removeListenerServiceCall('eyex','resizedbrowser');
 	eyeWidgets('unserialize');
 }

@@ -61,11 +61,10 @@ function eyeVisor_on_getFile($params = null) {
 	if ($bytes == '<html') {
 		$content = /* utf8 */ preg_replace('/<img[^\/]*\/>/i', '', file_get_contents($real));
 	} else {
-		$temp = um('getCurrentUserDir') . TMP_USER_DIR . '/' . $myPid . /* utf8 */ strrchr($file, '.');
-		vfs('real_copy', array($real, $temp));
+		$temp = $GLOBALS['myWorkspace'] . '/' . $myPid . '.html';
 		
-		if (eyeConverter('convert', array($temp, $temp . '.html', 'html', 1))) {
-			$content = vfs('real_getFileContent', array($temp . '.html'));
+		if (eyeConverter('convert', array($real, $temp, 'html', 1))) {
+			$content = vfs('real_getFileContent', array($temp));
 			
 			$checknum = proc('findChecknumByName', array('eyeX'));
 			$content = str_replace('<IMG SRC="', '<IMG SRC="index.php?checknum=' . strval($checknum) . '&amp;msg=viewTempImg&amp;params=', $content);
@@ -78,7 +77,6 @@ function eyeVisor_on_getFile($params = null) {
 }
 
 function eyeVisor_on_Close($params=null){
-	eyeConverter('cleanTmp');
 	proc('end');
 }
 

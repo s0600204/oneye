@@ -15,7 +15,7 @@ Copyright © 2005 - 2010 eyeos Team (team@eyeos.org)
 */
 
 function eyeDocs_saveFile($content) {
-	global $myPid;
+	global $myPid, $myWorkspace;
 	$file = $GLOBALS['filePath']->text;
 	//split the path into different parts
 	$info = pathinfo($file);
@@ -23,7 +23,7 @@ function eyeDocs_saveFile($content) {
 	$extension = /* utf8 */ strtolower($info['extension']);
 
 	if($extension == 'doc' || $extension == 'odt') {
-		$tempFile = um('getCurrentUserDir').'/tmp/'.$myPid.'_new.html';
+		$tempFile = $myWorkspace . '/' . $myPid . '_new.html';
 		$pos = /* utf8 */ strpos($content, '--&gt;</p>');
 		if(!$pos) {
 			$pos = -10;
@@ -81,7 +81,7 @@ function eyeDocs_saveFile($content) {
 }
 
 function eyeDocs_openFile($file) {
-	global $myPid;
+	global $myPid, $myWorkspace;
 	//split the path into different parts
 	$info = pathinfo($file);
 	//get the extension, see http://www.php.net/pathinfo for more information
@@ -89,8 +89,8 @@ function eyeDocs_openFile($file) {
 
 	if($extension == 'doc' || $extension == 'odt') {
 		$tCheckNum = proc('findChecknumByName',array('eyeX'));
-		$nfile = um('getCurrentUserDir').'tmp/'.$myPid.'.'.$info['extension'];
-		$myHTML = um('getCurrentUserDir').'tmp/'.$myPid.'_new.html';
+		$nfile = $myWorkspace.'/'.$myPid.'.'.$info['extension'];
+		$myHTML = $myWorkspace.'/'.$myPid.'_new.html';
 		$real = vfs('getRealName',array($file));
 
 		if(!vfs('checkPermissions',array($file))) {
@@ -99,8 +99,7 @@ function eyeDocs_openFile($file) {
 		}
 
 		copy($real,$nfile);
-		$to = 'html';
-		eyeConverter('convert',array($nfile,$myHTML,$to,1));
+		eyeConverter('convert',array($nfile,$myHTML,'html',1));
 		$fp = vfs('real_open',array($myHTML,'r'));
 		if(!$fp) {
 			eyeX('messageBox',array('content'=>'Sorry, you need to enable OpenOffice Support to view this document.'));

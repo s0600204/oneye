@@ -29,36 +29,29 @@ function eyePresentation_run($params=null) {
 	$myToolbar->addLine();
 	$myToolbar->addItem('fullscreen','index.php?theme=' . $_SESSION['usertheme'] . '&extern=icons/22x22/fullScreen.png','Full Screen','',1);
 
+	$myLabel = new Label(array(
+		'father' => $myWindow->name .'_Content',
+		'name' => 'eyePresentation_loadingMessage',
+		'x' => 0,
+		'y' => 80,
+		'cent' => 2,
+		'text' => 'Please open a file...'
+	));
+	$myLabel->show(0);
+
 	$myFrame = new Iframe(array('name'=>'imgFrame','father'=>'presentationWND_Content','x'=>5,
 		'y'=>55,'height'=>$myWindow->height-90,'width'=>$myWindow->width-15, 'url'=>"about:blank",'scroll'=>1));
 	$myFrame->show();
 	$myFrame->focus();
-	if($params[0]) {
-		$file = $params[0];
-		if (!vfs('checkPermissions', array($file, 'r'))) {
-			eyex('messageBox',array('content'=>'Sorry, you do not have sufficient permissions.'));
-			return;
-		}
-
-		$dest = realpath(um('getCurrentUserDir') . '/tmp') . DIRECTORY_SEPARATOR . $myPid . '_' . basename($file) . DIRECTORY_SEPARATOR;
-		vfs('real_mkDir', array($dest));
-		eyeConverter('convert', array(vfs('getRealName', array($file)), $dest, 'html', true, '--doctype=presentation'));
-
-		$myHidden = new Hidden(array('name'=>'filepath','father'=>'presentationWND','text'=>$file));
-		eyeWidgets('serialize',array($myHidden));
-		$GLOBALS['filepath'] = $myHidden;
-		include(EYE_ROOT.'/'.APP_DIR.'/eyePresentation/events.eyecode');
-		gotoSlide(0);
-		global $checknum;
-		$myFrame->setUrl("index.php?checknum=".$checknum."&msg=getSlide&anticache=".md5(uniqid(time())));
+	if ($params[0]) {
+		include_once(EYE_ROOT.'/'.APP_DIR.'/eyePresentation/events'.EYE_CODE_EXTENSION);
+		eyePresentation_on_SelectFileOpen(array('arg' => array(basename($params[0]))));
 	}
 	$myHidden = new Hidden(array('name'=>'fullscreen','father'=>'presentationWND','text'=>1));
 	eyeWidgets('serialize',array($myHidden));
 }
 
 function eyePresentation_end($params=null) {
-	global $myPid;
-	eyeConverter('cleanTmp');
 	eyeWidgets('unserialize');
 }
 
