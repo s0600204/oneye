@@ -103,6 +103,7 @@ function service_proc_launch($params) {
 	$procInfo['pid'] = $myPid;
 	$procInfo['tty'] = get_tty($oldPid);
 	$procInfo['exec'] = 'launch';
+	$procInfo['workspace'] = um('getCurrentUserDir') . TMP_USER_DIR . '/' . $myPid . '_' . $appName;
 	if (isset($params[2])) {
 		$procInfo['xArgs'] = $params[2];
 	} else {
@@ -126,8 +127,15 @@ function service_proc_launch($params) {
 		global $checknum;
 		$oldchecknum = $checknum;
 		$checknum = $procInfo['checknum'];//Set global for new Checknum.
+		
+		// set workspace
+		global $myWorkspace;
+		$myWorkspace = $procInfo['workspace'];
+		vfs('real_mkDir', array($myWorkspace));
+		
 		//load i18n
 		i18n('loadLang',array($appName));
+		
 		//Calling the run function and returning the result.
 		if (!is_array($appArgs)) {
 			$appArgs = array($appArgs);
@@ -137,6 +145,7 @@ function service_proc_launch($params) {
 		$checknum = $oldchecknum;
 		$myPid = $oldPid;
 		$procInfo = $oldProcInfo;
+		$myWorkspace = $procInfo['workspace'];
 		return $return;
 	}else{
 		$myPid = $oldPid;
@@ -251,29 +260,35 @@ function service_proc_close($params) {
  	if(empty($appName)){
 		return false;
  	}
+ 	
+ 	global $procInfo;
+	$appProc = proc('getProcByPid',array($pid));
+	$oldProc = $procInfo;
+	$procInfo = $appProc;
+	
 	//Calling the _end funciton if it exists
 	include_once(EYE_ROOT.'/'.APP_DIR.'/'.$appName.'/app'.EYE_CODE_EXTENSION);
 	if(function_exists($appName.'_end')) {
-		global $myPid,$checknum,$procInfo;
-		$appProc = proc('getProcByPid',array($pid));
+		global $checknum, $myPid;
 		$oldPid = $myPid;
 		$myPid = $pid;
 		$oldChecknum = $checknum;
 		$checknum = $appProc['checknum'];
-		$oldProc = $procInfo;
-		$procInfo = $appProc;
 		$procInfo['exec'] = 'close';//Maybe the _end user can call another function not only designed for the close action
 		$myTempVar = call_user_func($appName.'_end');
-		$myPid = $oldPid;
 		$checknum = $oldChecknum;
-		$procInfo = $oldProc;
+		$myPid = $oldPid;
 	}
 	//Deleting possible listener service calls
 	removeListenerServiceCallByPid($pid);
 	removeListenerServiceCallByPid($pid,1);
 	//Delete the proc
 	eyeSessions('DelArrayValueByKey',array(TABLENAME,$pid));
-
+	// Remove workspace
+	vfs('real_rmDir', array($procInfo['workspace']));
+	
+	$procInfo = $oldProc;
+	
 	//If doesn't have end function, return true.
 	if(isset($myTempVar))
 	{

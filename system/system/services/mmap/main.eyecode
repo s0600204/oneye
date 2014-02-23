@@ -135,7 +135,11 @@ function service_mmap_routemsg($params) {
 
 		exit;
 	}
-
+	
+	// Set workspace (see proc)
+	global $myWorkspace;
+	$myWorkspace = $procInfo['workspace'];
+	
 	global $outputBuffer;
 	$outputBuffer = "";
 	i18n('loadLang',array($procInfo['appName']));

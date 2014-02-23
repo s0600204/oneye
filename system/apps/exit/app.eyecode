@@ -75,6 +75,14 @@ function exit_run($params=null) {
 	));
 	$myImagebox->show();
 	
+	// Kill running apps
+	foreach (proc('getProcessTable') as $key => $value) {
+		if ($key == $GLOBALS['myPid']) { continue; }
+		proc('close', array($key));
+	}
+	// Remove own workspace
+	vfs('real_rmDir', array($GLOBALS['procInfo']['workspace']));
+	
 	// Terminate the session and reload the login page
 	eyex('sendMessage', array('msg' => 'logout', 'params' => $timeout));
 }
