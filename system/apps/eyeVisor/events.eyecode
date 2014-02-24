@@ -44,7 +44,7 @@ function eyeVisor_on_Resize($params=null) {
 }
 
 function eyeVisor_on_getFile($params = null) {
-	global $myPid;
+	global $myPid, $myWorkspace;
 	
 	$file = $GLOBALS['vPath']->text;
 	
@@ -53,18 +53,20 @@ function eyeVisor_on_getFile($params = null) {
 		return false;
 	}
 	
+	$src = $myWorkspace . '/' . $myPid . /* utf8 */ strrchr($file, '.');
 	$real = vfs('getRealName', array($file));
-	$handler = vfs('real_open', array($real, 'r'));
+	vfs('real_copy', array($real, $src));
+	$handler = vfs('real_open', array($src, 'r'));
 	$bytes = fread($handler, 5);
 	fclose($handler);
 	
 	if ($bytes == '<html') {
 		$content = /* utf8 */ preg_replace('/<img[^\/]*\/>/i', '', file_get_contents($real));
 	} else {
-		$temp = $GLOBALS['myWorkspace'] . '/' . $myPid . '.html';
+		$dest = $GLOBALS['myWorkspace'] . '/' . $myPid . '.html';
 		
-		if (eyeConverter('convert', array($real, $temp, 'html', 1))) {
-			$content = vfs('real_getFileContent', array($temp));
+		if (eyeConverter('convert', array($src, $myWorkspace, 'html', 1))) {
+			$content = vfs('real_getFileContent', array($dest));
 			
 			$checknum = proc('findChecknumByName', array('eyeX'));
 			$content = str_replace('<IMG SRC="', '<IMG SRC="index.php?checknum=' . strval($checknum) . '&amp;msg=viewTempImg&amp;params=', $content);

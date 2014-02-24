@@ -48,9 +48,8 @@ function eyePresentation_on_SelectFileOpen($params=null) {
 		$src = $myWorkspace . '/' . $myPid . /* utf8 */ strrchr($file, '.');
 		$real = vfs('getRealName', array($file));
 		vfs('real_copy', array($real, $src));
-		$dest = $myWorkspace . '/' . $myPid . '.html';
 		
-		if (eyeConverter('convert', array($src, $dest, 'html', true))) {
+		if (eyeConverter('convert', array($src, $myWorkspace, 'html', true))) {
 			$myHidden = new Hidden(array('name'=>'filepath','father'=>'presentationWND','text'=>$file));
 			eyeWidgets('serialize',array($myHidden));
 			$GLOBALS['filepath'] = $myHidden;

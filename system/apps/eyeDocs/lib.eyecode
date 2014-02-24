@@ -42,14 +42,13 @@ function eyeDocs_saveFile($content) {
 		if(!vfs('fileExists',array($file))) {
 			vfs('create',array($file,'eyeDocs'));
 		}
+
+		eyeConverter('convert',array($tempFile,$myWorkspace,$format,1));
 		
-		eyeConverter('convert',array($tempFile,$tempFolder,$format,1));
-		
-		$src = $tempFolder."/".basename($tempFile,".html").".".$extension;
+		$src = $myWorkspace."/".basename($tempFile,".html").".".$extension;
 		$dest = vfs('getRealName',array($file));
 		vfs('real_delete', array($dest));
 		vfs('real_copy', array($src, $dest));
-		
 	} else {
 		$pos = /* utf8 */ strpos($content,'--&gt;</p>');
 		if(!$pos) {
@@ -96,7 +95,7 @@ function eyeDocs_openFile($file) {
 	if($extension == 'doc' || $extension == 'odt') {
 		$tCheckNum = proc('findChecknumByName',array('eyeX'));
 		$nfile = $myWorkspace.'/'.$myPid.'.'.$info['extension'];
-		$myHTML = $myWorkspace.'/'.$myPid.'_new.html';
+		$myHTML = $myWorkspace.'/'.$myPid.'.html';
 		$real = vfs('getRealName',array($file));
 
 		if(!vfs('checkPermissions',array($file))) {
@@ -105,7 +104,7 @@ function eyeDocs_openFile($file) {
 		}
 
 		copy($real,$nfile);
-		eyeConverter('convert',array($nfile,$myHTML,'html',1));
+		eyeConverter('convert',array($nfile,$myWorkspace,'html',1));
 		$fp = vfs('real_open',array($myHTML,'r'));
 		if(!$fp) {
 			eyeX('messageBox',array('content'=>'Sorry, you need to enable OpenOffice Support to view this document.'));
