@@ -42,8 +42,14 @@ function eyeDocs_saveFile($content) {
 		if(!vfs('fileExists',array($file))) {
 			vfs('create',array($file,'eyeDocs'));
 		}
-
-		eyeConverter('convert',array($tempFile,vfs('getRealName',array($file)),$format,1));
+		
+		eyeConverter('convert',array($tempFile,$tempFolder,$format,1));
+		
+		$src = $tempFolder."/".basename($tempFile,".html").".".$extension;
+		$dest = vfs('getRealName',array($file));
+		vfs('real_delete', array($dest));
+		vfs('real_copy', array($src, $dest));
+		
 	} else {
 		$pos = /* utf8 */ strpos($content,'--&gt;</p>');
 		if(!$pos) {
